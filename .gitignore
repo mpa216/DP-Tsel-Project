@@ -1,0 +1,10 @@
+# Python virtual environment
+venv/
+
+# Temporary files
+tempCodeRunnerFile.py
+test.py
+
+# IDE/Editor specific files
+.vscode/
+__pycache__/
