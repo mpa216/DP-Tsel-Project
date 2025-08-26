@@ -5,30 +5,11 @@ cara jalaninnya (lokal):
 4. di Terminal 2 tulis : python web_client.py 
 
 cara jalanin secara cross device:
-1. Find Your Server's Local IP Address
-The computer running the app.py server needs to tell the other devices its address on the local network.
+<img width="937" height="564" alt="image" src="https://github.com/user-attachments/assets/5f99830b-5752-4d31-8f19-0580fb4eb1ee" />
 
-On the computer where the server is running, open the Command Prompt (you can search for cmd).
+<img width="952" height="627" alt="image" src="https://github.com/user-attachments/assets/8e5762ed-421e-496f-8297-d82d56e1ce5a" />
 
-Type the following command and press Enter:
+<img width="914" height="424" alt="image" src="https://github.com/user-attachments/assets/996699fc-f912-49e7-aaa7-3ca3a62193b5" />
 
-ipconfig
-Look for the "Wireless LAN adapter Wi-Fi" or "Ethernet adapter" section. You will find an "IPv4 Address" that looks something like 192.168.1.15 or 10.0.0.5. This is the server's local IP address.
 
-2. Modify the Client Code on the Other Devices
-On each of the other devices where you want to run web_client.py, you need to make one small change to the code:
 
-Open web_client.py.
-
-Find this line near the top:
-
-def __init__(self, base_url='http://127.0.0.1:5000'):
-Replace 127.0.0.1 with the server's IP address you found in Step 1. For example:
-
-def __init__(self, base_url='http://192.168.1.15:5000'):
-3. Run Everything
-Make sure all the devices (the server and all the clients) are connected to the same Wi-Fi or local network.
-
-Start the server on the main computer by running python app.py.
-
-On each of the other devices, run the modified python web_client.py.
