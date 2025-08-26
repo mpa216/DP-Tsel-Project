@@ -31,7 +31,6 @@ class PrivacyEngine:
 
     def _get_private_sum(self, data, epsilon):
         if not data: return 0
-        # FIX: Explicitly name all the required arguments for the BoundedSum constructor.
         return BoundedSum(epsilon=epsilon, lower_bound=self._lower_bound, upper_bound=self._upper_bound, dtype='float').quick_result(data)
 
     def _get_private_count(self, data, epsilon):
@@ -70,20 +69,31 @@ app = Flask(__name__)
 # Initialize the privacy engine once when the app starts
 privacy_engine = PrivacyEngine(data_path='BBA_Cleaned.csv')
 
+# --- SERVER-SIDE PRIVACY POLICY ---
+# The server defines the epsilon (privacy budget) for each query type.
+# The client cannot change these values.
+SERVER_EPSILON_POLICY = {
+    "revenue_by_region": 0.75,
+    "count_by_category": 0.5,
+    "count_by_fingerprint": 0.2
+}
+
 @app.route('/api/query', methods=['POST'])
 def handle_query():
     """A single endpoint to handle all types of queries."""
     if not privacy_engine._raw_data is not None:
         return jsonify({"error": "Server data not loaded."}), 500
 
-    # Get query parameters from the JSON body of the request
     data = request.get_json()
     query_type = data.get("type")
     use_dp = data.get("use_dp", False)
-    epsilon = data.get("epsilon", 0.5)
     params = data.get("params", {})
 
-    print(f"Received query: {query_type} (DP={'On' if use_dp else 'Off'})")
+    # The server now retrieves the epsilon from its internal policy.
+    # It IGNORES any epsilon value sent by the client.
+    epsilon = SERVER_EPSILON_POLICY.get(query_type, 1.0) # Default to 1.0 if not in policy
+
+    print(f"Received query: {query_type} (DP={'On' if use_dp else 'Off'}, Server Epsilon={epsilon if use_dp else 'N/A'})")
 
     if query_type == "revenue_by_region":
         result = privacy_engine.get_revenue_by_region(use_dp, epsilon)
@@ -97,6 +107,4 @@ def handle_query():
     return jsonify({"result": result})
 
 if __name__ == '__main__':
-    # Setting debug=False is important for production
-    # The server is now a proper web server that can handle multiple requests
     app.run(host='0.0.0.0', port=5000, debug=False)

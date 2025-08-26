@@ -6,6 +6,7 @@ import pandas as pd
 class AnalystClient:
     """
     The Client (Analyst) sends HTTP requests to the Flask API server.
+    It can no longer control the epsilon value.
     """
     def __init__(self, base_url='http://127.0.0.1:5000'):
         self._base_url = base_url
@@ -15,14 +16,13 @@ class AnalystClient:
         """Sends a POST request with a JSON payload to the server's API."""
         try:
             response = requests.post(f"{self._base_url}/api/query", json=query_payload)
-            # Raise an exception if the server returned an error (e.g., 400, 500)
             response.raise_for_status()
             return response.json().get("result")
         except requests.exceptions.RequestException as e:
             print(f"❌ Connection Error: Could not connect to the server. {e}")
             return None
 
-    # All plotting functions (plot_bar_charts, plot_pie_charts, etc.) remain exactly the same
+    # All plotting functions remain exactly the same
     def plot_bar_charts(self, non_private_data, private_data, title):
         df = pd.DataFrame({
             'Category': list(non_private_data.keys()),
@@ -64,26 +64,26 @@ class AnalystClient:
         plt.tight_layout()
         plt.show()
 
-
-    # All analysis functions are the same, they just build a different payload dictionary
     def perform_revenue_analysis(self):
         print("\n--- 📊 1. Revenue Analysis Initiated 📊 ---\n")
+        # The client no longer sends an epsilon value.
         non_private = self._send_query({"type": "revenue_by_region", "use_dp": False})
-        private_high = self._send_query({"type": "revenue_by_region", "use_dp": True, "epsilon": 0.1})
-        if not all([non_private, private_high]): return
-        self.plot_bar_charts(non_private, private_high, 'Actual vs. Private Revenue (High Privacy, ε=0.1)')
+        private = self._send_query({"type": "revenue_by_region", "use_dp": True})
+        if not all([non_private, private]): return
+        # The title is updated to reflect that the epsilon is server-controlled.
+        self.plot_bar_charts(non_private, private, 'Actual vs. Private Revenue (Server-Controlled Privacy)')
 
     def perform_count_analysis(self):
         print("\n--- 📊 2. Customer Count Analysis Initiated 📊 ---\n")
         non_private = self._send_query({"type": "count_by_category", "use_dp": False})
-        private = self._send_query({"type": "count_by_category", "use_dp": True, "epsilon": 0.2})
+        private = self._send_query({"type": "count_by_category", "use_dp": True})
         if not all([non_private, private]): return
         self.plot_pie_charts(non_private, private, 'Customer Distribution by Package Category')
 
     def perform_long_tail_analysis(self):
         print("\n--- 📊 3. Long-Tail Category Analysis Initiated 📊 ---\n")
         non_private = self._send_query({"type": "count_by_category", "use_dp": False})
-        private = self._send_query({"type": "count_by_category", "use_dp": True, "epsilon": 0.5})
+        private = self._send_query({"type": "count_by_category", "use_dp": True})
         if not all([non_private, private]): return
         long_tail_categories = {cat: count for cat, count in non_private.items() if count <= 10}
         if not long_tail_categories: return
@@ -102,10 +102,10 @@ class AnalystClient:
         if non_private_result is not None and non_private_result <= 5:
             analysis_text += f"🚨 VULNERABILITY CONFIRMED: The attacker has isolated a very small group of {non_private_result} people.\n\n"
         
-        private_payload = {"type": "count_by_fingerprint", "use_dp": True, "epsilon": 0.1, "params": attack_params}
+        private_payload = {"type": "count_by_fingerprint", "use_dp": True, "params": attack_params}
         private_result = self._send_query(private_payload)
 
-        analysis_text += "--- Attack WITH Differential Privacy (ε=0.1) ---\n"
+        analysis_text += "--- Attack WITH Differential Privacy (Server-Controlled Epsilon) ---\n"
         analysis_text += f"Server's Noisy Count: {private_result:.4f}\n"
         analysis_text += "Result: The attacker cannot be certain of the true group size. ✅ PRIVACY PRESERVED."
         print(analysis_text)
