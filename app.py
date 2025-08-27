@@ -73,8 +73,8 @@ privacy_engine = PrivacyEngine(data_path='BBA_Cleaned.csv')
 # The server defines the epsilon (privacy budget) for each query type.
 # The client cannot change these values.
 SERVER_EPSILON_POLICY = {
-    "revenue_by_region": 0.75,
-    "count_by_category": 0.5,
+    "revenue_by_region": 4.0,
+    "count_by_category": 2.5,
     "count_by_fingerprint": 0.2
 }
 
